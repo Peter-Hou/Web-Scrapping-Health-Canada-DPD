@@ -1,6 +1,4 @@
 import streamlit as st
-import requests
-from bs4 import BeautifulSoup
 from DataExtractsDownload import download_zip_files
 from QueryDPD import get_Search_Criteria
 from DataExtractsDataWrangling import get_csv_files
