@@ -134,7 +134,7 @@ def get_processed_dataframes():
                         df = pd.read_csv(file, sep=',', header=None, names=column_names)
                         globals()[file_name.split('.')[0]] = df
 
-    with st.spinner('Joining the Data'):
+    with st.spinner('Combine Diverse Data Sources'):
         merged_active = drug.merge(biosimilar, on='DRUG_CODE', how='left') \
                           .merge(comp, on='DRUG_CODE', how='left') \
                           .merge(form, on='DRUG_CODE', how='left') \
@@ -186,43 +186,49 @@ def get_processed_dataframes():
         active_biosimilar_ingred_codes = merged_active['ACTIVE_INGREDIENT_CODE'][merged_active['TYPE'] == 'Biosimilar'].unique()
         active_biosimilar_ingred_codes
         merged_active.loc[merged_active['ACTIVE_INGREDIENT_CODE'].isin(active_biosimilar_ingred_codes) & \
-                              merged_active['TYPE'].isna(), 'TYPE'] = 'Biologic'
+                              merged_active['TYPE'].isna() & \
+                              merged_active['CLASS'] == 'Human', 'TYPE'] = 'Biologic'
 
         inactive_biosimilar_ingred_codes = merged_inactive['ACTIVE_INGREDIENT_CODE'][merged_inactive['TYPE'] == 'Biosimilar'].unique()
         inactive_biosimilar_ingred_codes
         merged_inactive.loc[merged_inactive['ACTIVE_INGREDIENT_CODE'].isin(inactive_biosimilar_ingred_codes) & \
-                              merged_inactive['TYPE'].isna(), 'TYPE'] = 'Biologic'
+                              merged_inactive['TYPE'].isna() & \
+                              merged_inactive['CLASS'] == 'Human', 'TYPE'] = 'Biologic'
 
         dormant_biosimilar_ingred_codes = merged_dormant['ACTIVE_INGREDIENT_CODE'][merged_dormant['TYPE'] == 'Biosimilar'].unique()
         dormant_biosimilar_ingred_codes
         merged_dormant.loc[merged_dormant['ACTIVE_INGREDIENT_CODE'].isin(dormant_biosimilar_ingred_codes) & \
-                              merged_dormant['TYPE'].isna(), 'TYPE'] = 'Biologic'
+                              merged_dormant['TYPE'].isna() & \
+                              merged_dormant['CLASS'] == 'Human', 'TYPE'] = 'Biologic'
 
         approved_biosimilar_ingred_codes = merged_approved['ACTIVE_INGREDIENT_CODE'][merged_approved['TYPE'] == 'Biosimilar'].unique()
         approved_biosimilar_ingred_codes
         merged_approved.loc[merged_approved['ACTIVE_INGREDIENT_CODE'].isin(approved_biosimilar_ingred_codes) & \
-                              merged_approved['TYPE'].isna(), 'TYPE'] = 'Biologic'
+                              merged_approved['TYPE'].isna() & \
+                              merged_approved['CLASS'] == 'Human', 'TYPE'] = 'Biologic'
 
         merged_approved.columns = merged_approved.columns.str.replace('Footnote', '')
         merged_inactive.columns = merged_inactive.columns.str.replace('Footnote', '')
         merged_dormant.columns = merged_dormant.columns.str.replace('Footnote', '')
         merged_active.columns = merged_active.columns.str.replace('Footnote', '')
         DIN_MASTER = pd.concat([merged_approved, merged_inactive, merged_dormant, merged_active], ignore_index = True)
-        return merged_active, merged_inactive, merged_dormant, merged_approved
+        return merged_active, merged_inactive, merged_dormant, merged_approved, DIN_MASTER
 
-def get_csv_files(merged_active, merged_inactive, merged_dormant, merged_approved):
-    with st.spinner('Processing File Downloading'):
+def get_csv_files(merged_active, merged_inactive, merged_dormant, merged_approved, DIN_MASTER):
+    with st.spinner('Processing Files Downloading'):
         def filedownload(df, filename):
             csv = df.to_csv(index=False)
             b64 = base64.b64encode(csv.encode()).decode()  # strings <-> bytes conversions
             href = f'<a href="data:file/csv;base64,{b64}" download="{filename}"> Download {filename} </a>'
             return href
 
-        st.markdown(filedownload(merged_active, 'Active_DINS'), unsafe_allow_html=True)
-        st.write(f'Active_DINS Downloading Completed')
-        #st.markdown(filedownload(merged_inactive, 'Inactive_DINS'), unsafe_allow_html=True)
-        #st.write(f'Inactive_DINS Downloading Completed')
-        st.markdown(filedownload(merged_dormant, 'Dormant_DINS'), unsafe_allow_html=True)
-        st.write(f'Dormant_DINS Downloading Completed')
-        st.markdown(filedownload(merged_approved, 'Approved_DINS'), unsafe_allow_html=True)
-        st.write(f'Approved_DINSDownloading Completed')
+        st.markdown(filedownload(merged_active, 'Active_DINS.csv'), unsafe_allow_html=True)
+        st.write(f'Click to Download Active_DINS')
+        st.markdown(filedownload(merged_inactive, 'Inactive_DINS.csv'), unsafe_allow_html=True)
+        st.write(f'Click to Download Inactive_DINS')
+        st.markdown(filedownload(merged_dormant, 'Dormant_DINS.csv'), unsafe_allow_html=True)
+        st.write(f'Click to Download Dormant_DINS')
+        st.markdown(filedownload(merged_approved, 'Approved_DINS.csv'), unsafe_allow_html=True)
+        st.write(f'Click to Download Approved_DINS')
+        st.markdown(filedownload(DIN_MASTER, 'DIN_MASTER.csv'), unsafe_allow_html=True)
+        st.write(f'Click to Download DIN_MASTER which includes all the files above')
