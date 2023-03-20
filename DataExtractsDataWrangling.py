@@ -217,18 +217,18 @@ def get_processed_dataframes():
 def get_csv_files(merged_active, merged_inactive, merged_dormant, merged_approved, DIN_MASTER):
     with st.spinner('Processing Files Downloading'):
         def filedownload(df, filename):
-            csv = df.to_csv(index=False)
-            b64 = base64.b64encode(csv.encode()).decode()  # strings <-> bytes conversions
-            href = f'<a href="data:file/csv;base64,{b64}" download="{filename}"> Download {filename} </a>'
+            csv = df.to_csv(encoding='utf-8-sig')
+            b64 = base64.b64encode(csv.encode('utf-8-sig')).decode()  # strings <-> bytes conversions
+            href = f'<a href="data:file/csv;charset = utf-8;base64, {b64}" download="{filename}"> Download {filename} </a>'
             return href
 
-        st.markdown(filedownload(merged_active, 'Active_DINS.csv'), unsafe_allow_html=True)
-        st.write(f'Click to Download Active_DINS')
-        st.markdown(filedownload(merged_inactive, 'Inactive_DINS.csv'), unsafe_allow_html=True)
-        st.write(f'Click to Download Inactive_DINS')
-        st.markdown(filedownload(merged_dormant, 'Dormant_DINS.csv'), unsafe_allow_html=True)
-        st.write(f'Click to Download Dormant_DINS')
+        #st.markdown(filedownload(merged_active, 'Active_DINS.csv'), unsafe_allow_html=True)
+        #st.write(f'Click to Download Active_DINS')
+        #st.markdown(filedownload(merged_inactive, 'Inactive_DINS.csv'), unsafe_allow_html=True)
+        #st.write(f'Click to Download Inactive_DINS')
+        #st.markdown(filedownload(merged_dormant, 'Dormant_DINS.csv'), unsafe_allow_html=True)
+        #st.write(f'Click to Download Dormant_DINS')
         st.markdown(filedownload(merged_approved, 'Approved_DINS.csv'), unsafe_allow_html=True)
         st.write(f'Click to Download Approved_DINS')
-        st.markdown(filedownload(DIN_MASTER, 'DIN_MASTER.csv'), unsafe_allow_html=True)
-        st.write(f'Click to Download DIN_MASTER which includes all the files above')
+        #st.markdown(filedownload(DIN_MASTER, 'DIN_MASTER.csv'), unsafe_allow_html=True)
+        #st.write(f'Click to Download DIN_MASTER which includes all the files above')
