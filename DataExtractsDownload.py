@@ -14,7 +14,7 @@ def download_zip_files(download = True):
 
     def filedownload(zip_file, filename):
         b64 = base64.b64encode(zip_file).decode()  # strings <-> bytes conversions
-        href = f'<a href="data:file/csv;base64,{b64}" download="{filename}"> {filename} </a>'
+        href = f'<a href="data:file/csv;base64,{b64}" download="{filename}"> Click to Download {filename} </a>'
         return href
 
     if download:
@@ -24,9 +24,8 @@ def download_zip_files(download = True):
                 # Write the file to the local file system
                 st.markdown(filedownload(response, file_name), unsafe_allow_html=True)
 
-                st.write(f'{file_name} Downloading Completed')
     else:
-        with st.spinner('Getting Zip File Ready...'):
+        with st.spinner('Getting Data Extracts Files Ready...'):
             zip_files = {}
             for file_name, url in file_urls.items():
                 # Send a request to download the file content

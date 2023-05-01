@@ -6,6 +6,7 @@ from DataExtractsDownload import download_zip_files
 from bs4 import BeautifulSoup
 import pandas as pd
 import base64
+import zipfile
 import os
 
 def get_processed_dataframes():
@@ -214,21 +215,37 @@ def get_processed_dataframes():
         DIN_MASTER = pd.concat([merged_approved, merged_inactive, merged_dormant, merged_active], ignore_index = True)
         return merged_active, merged_inactive, merged_dormant, merged_approved, DIN_MASTER
 
+# Function to convert DataFrame to CSV and compress it to a zip file
+data = {'Column1': [1, 2, 3], 'Column2': ['A', 'B', 'C']}
+df = pd.DataFrame(data)
+
 def get_csv_files(merged_active, merged_inactive, merged_dormant, merged_approved, DIN_MASTER):
     with st.spinner('Processing Files Downloading'):
-        def filedownload(df, filename):
-            csv = df.to_csv(encoding='utf-8-sig')
-            b64 = base64.b64encode(csv.encode('utf-8-sig')).decode()  # strings <-> bytes conversions
-            href = f'<a href="data:file/csv;charset = utf-8;base64, {b64}" download="{filename}"> Download {filename} </a>'
+        def compress_and_download(df, csv_filename, zip_filename):
+            # Convert the DataFrame to a CSV
+            csv_data = df.to_csv(index=False, encoding='utf-8-sig')
+
+            # Create an in-memory buffer for writing the zip file
+            zip_buffer = io.BytesIO()
+
+            # Create a zip file and add the CSV data to it
+            with zipfile.ZipFile(zip_buffer, mode='w', compression=zipfile.ZIP_DEFLATED) as z:
+                z.writestr(csv_filename, csv_data)
+
+            # Set cursor position to the beginning of the buffer
+            zip_buffer.seek(0)
+
+            # Encode the zip buffer to base64
+            b64 = base64.b64encode(zip_buffer.getvalue()).decode()
+
+            # Create a download link for the zip file
+            href = f'<a href="data:application/zip;charset = utf-8;base64,{b64}" download="{zip_filename}">Click to download {zip_filename}</a>'
+
             return href
 
-        #st.markdown(filedownload(merged_active, 'Active_DINS.csv'), unsafe_allow_html=True)
-        #st.write(f'Click to Download Active_DINS')
-        #st.markdown(filedownload(merged_inactive, 'Inactive_DINS.csv'), unsafe_allow_html=True)
-        #st.write(f'Click to Download Inactive_DINS')
-        #st.markdown(filedownload(merged_dormant, 'Dormant_DINS.csv'), unsafe_allow_html=True)
-        #st.write(f'Click to Download Dormant_DINS')
-        st.markdown(filedownload(merged_approved, 'Approved_DINS.csv'), unsafe_allow_html=True)
-        st.write(f'Click to Download Approved_DINS')
-        #st.markdown(filedownload(DIN_MASTER, 'DIN_MASTER.csv'), unsafe_allow_html=True)
-        #st.write(f'Click to Download DIN_MASTER which includes all the files above')
+        active_dins_download = compress_and_download(merged_active, 'Active_DINS.csv', 'Active_DINS.zip')
+        st.markdown(active_dins_download, unsafe_allow_html=True)
+        st.write(f'Click to Download Active_DINS')
+
+
+

@@ -13,10 +13,12 @@ st.title("DPD Project")
 #tab1, tab2 = st.tabs(tabs)
 #with tab1:
 
-st.subheader('Download Data Extracts')
+st.subheader('Data Extracts')
 st.write('This button will download the most updated data extracts zip files to your local default download folder')
-download = st.button("Download Zip Files")
-final = st.button('Download Processed Files')
+download = st.button("Download Zip Files of Data Extracts")
+st.subheader('Analytical Ready Drug Database')
+st.write('This button will download zip files of the analytical ready drug database by processing the data extracts')
+final = st.button('Download Analytical Ready Drug Database')
 if download:
     download_zip_files()
 if final:
