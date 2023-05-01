@@ -230,7 +230,7 @@ def get_csv_files(merged_active, merged_inactive, merged_dormant, merged_approve
 
             # Create a zip file and add the CSV data to it
             with zipfile.ZipFile(zip_buffer, mode='w', compression=zipfile.ZIP_DEFLATED) as z:
-                z.writestr(csv_filename, csv_data)
+                z.writestr(csv_filename, csv_data.encode('utf-8-sig'))
 
             # Set cursor position to the beginning of the buffer
             zip_buffer.seek(0)
@@ -239,13 +239,22 @@ def get_csv_files(merged_active, merged_inactive, merged_dormant, merged_approve
             b64 = base64.b64encode(zip_buffer.getvalue()).decode()
 
             # Create a download link for the zip file
-            href = f'<a href="data:application/zip;charset = utf-8;base64,{b64}" download="{zip_filename}">Click to download {zip_filename}</a>'
+            href = f'<a href="data:application/zip;base64,{b64}" download="{zip_filename}">Click to download {zip_filename}</a>'
 
             return href
 
-        active_dins_download = compress_and_download(merged_active, 'Active_DINS.csv', 'Active_DINS.zip')
+        active_dins_download = compress_and_download(merged_active, 'Active DINS.csv', 'Active Dins.zip')
         st.markdown(active_dins_download, unsafe_allow_html=True)
-        st.write(f'Click to Download Active_DINS')
 
+        din_master_download = compress_and_download(merged_inactive, 'Inactive Dins.csv', 'Inactive Dins.zip')
+        st.markdown(din_master_download, unsafe_allow_html=True)
 
+        din_master_download = compress_and_download(merged_approved, 'Approved Dins.csv', 'Approved Dins.zip')
+        st.markdown(din_master_download, unsafe_allow_html=True)
+
+        din_master_download = compress_and_download(merged_dormant, 'Dormant Dins.csv', 'Dormant Dins.zip')
+        st.markdown(din_master_download, unsafe_allow_html=True)
+
+        din_master_download = compress_and_download(DIN_MASTER, 'Din Master.csv', 'Din Master.zip')
+        st.markdown(din_master_download, unsafe_allow_html=True)
 
