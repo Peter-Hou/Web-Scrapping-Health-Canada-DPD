@@ -184,29 +184,37 @@ def get_processed_dataframes():
                           .merge(ther_ap, on='DRUG_CODE', how='left') \
                           .merge(vet_ap, on='DRUG_CODE', how='left')
     with st.spinner('Data Cleaning'):
-        active_biosimilar_ingred_codes = merged_active['ACTIVE_INGREDIENT_CODE'][merged_active['TYPE'] == 'Biosimilar'].unique()
-        active_biosimilar_ingred_codes
-        merged_active.loc[merged_active['ACTIVE_INGREDIENT_CODE'].isin(active_biosimilar_ingred_codes) & \
-                              merged_active['TYPE'].isna() & \
-                              merged_active['CLASS'] == 'Human', 'TYPE'] = 'Biologic'
+        # Extracts all ingredient codes that are biosimilar type from all files
+        active_biosimilar_ingred_codes = merged_active['ACTIVE_INGREDIENT_CODE'][
+            merged_active['TYPE'] == 'Biosimilar'].unique()
+        inactive_biosimilar_ingred_codes = merged_inactive['ACTIVE_INGREDIENT_CODE'][
+            merged_inactive['TYPE'] == 'Biosimilar'].unique()
+        dormant_biosimilar_ingred_codes = merged_dormant['ACTIVE_INGREDIENT_CODE'][
+            merged_dormant['TYPE'] == 'Biosimilar'].unique()
+        approved_biosimilar_ingred_codes = merged_approved['ACTIVE_INGREDIENT_CODE'][
+            merged_approved['TYPE'] == 'Biosimilar'].unique()
 
-        inactive_biosimilar_ingred_codes = merged_inactive['ACTIVE_INGREDIENT_CODE'][merged_inactive['TYPE'] == 'Biosimilar'].unique()
-        inactive_biosimilar_ingred_codes
-        merged_inactive.loc[merged_inactive['ACTIVE_INGREDIENT_CODE'].isin(inactive_biosimilar_ingred_codes) & \
-                              merged_inactive['TYPE'].isna() & \
-                              merged_inactive['CLASS'] == 'Human', 'TYPE'] = 'Biologic'
+        # Put all ingredient codes that are biosimilar type into one array
+        biosimilar_ingred_codes = np.concatenate((active_biosimilar_ingred_codes, inactive_biosimilar_ingred_codes,
+                                                  dormant_biosimilar_ingred_codes, approved_biosimilar_ingred_codes),
+                                                 axis=None)
 
-        dormant_biosimilar_ingred_codes = merged_dormant['ACTIVE_INGREDIENT_CODE'][merged_dormant['TYPE'] == 'Biosimilar'].unique()
-        dormant_biosimilar_ingred_codes
-        merged_dormant.loc[merged_dormant['ACTIVE_INGREDIENT_CODE'].isin(dormant_biosimilar_ingred_codes) & \
-                              merged_dormant['TYPE'].isna() & \
-                              merged_dormant['CLASS'] == 'Human', 'TYPE'] = 'Biologic'
+        # Replace all entries in each file which the ingredient code is in biosimilar ingredient code, the class is Human, and the type is NA with biologic type
+        active_mask = (merged_active['CLASS'] == 'Human') & (
+            merged_active['ACTIVE_INGREDIENT_CODE'].isin(biosimilar_ingred_codes)) & (merged_active['TYPE'].isna())
+        merged_active.loc[active_mask, "TYPE"] = 'Biologic'
 
-        approved_biosimilar_ingred_codes = merged_approved['ACTIVE_INGREDIENT_CODE'][merged_approved['TYPE'] == 'Biosimilar'].unique()
-        approved_biosimilar_ingred_codes
-        merged_approved.loc[merged_approved['ACTIVE_INGREDIENT_CODE'].isin(approved_biosimilar_ingred_codes) & \
-                              merged_approved['TYPE'].isna() & \
-                              merged_approved['CLASS'] == 'Human', 'TYPE'] = 'Biologic'
+        inactive_mask = (merged_inactive['CLASS'] == 'Human') & (
+            merged_inactive['ACTIVE_INGREDIENT_CODE'].isin(biosimilar_ingred_codes)) & (merged_inactive['TYPE'].isna())
+        merged_inactive.loc[inactive_mask, 'TYPE'] = 'Biologic'
+
+        dormant_mask = (merged_dormant['CLASS'] == 'Human') & (
+            merged_dormant['ACTIVE_INGREDIENT_CODE'].isin(biosimilar_ingred_codes)) & (merged_dormant['TYPE'].isna())
+        merged_dormant.loc[dormant_mask, 'TYPE'] = 'Biologic'
+
+        approved_mask = (merged_approved['CLASS'] == 'Human') & (
+            merged_approved['ACTIVE_INGREDIENT_CODE'].isin(biosimilar_ingred_codes)) & (merged_approved['TYPE'].isna())
+        merged_approved.loc[approved_mask, 'TYPE'] = 'Biologic'
 
         merged_approved.columns = merged_approved.columns.str.replace('Footnote', '')
         merged_inactive.columns = merged_inactive.columns.str.replace('Footnote', '')
