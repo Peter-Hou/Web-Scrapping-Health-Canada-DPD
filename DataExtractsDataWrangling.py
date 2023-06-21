@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import base64
 import zipfile
+import numpy as np
 import os
 
 def get_processed_dataframes():
@@ -216,16 +217,20 @@ def get_processed_dataframes():
             merged_approved['ACTIVE_INGREDIENT_CODE'].isin(biosimilar_ingred_codes)) & (merged_approved['TYPE'].isna())
         merged_approved.loc[approved_mask, 'TYPE'] = 'Biologic'
 
+        # Clean the dataset that has a column with a footnote in its name
         merged_approved.columns = merged_approved.columns.str.replace('Footnote', '')
         merged_inactive.columns = merged_inactive.columns.str.replace('Footnote', '')
         merged_dormant.columns = merged_dormant.columns.str.replace('Footnote', '')
         merged_active.columns = merged_active.columns.str.replace('Footnote', '')
-        DIN_MASTER = pd.concat([merged_approved, merged_inactive, merged_dormant, merged_active], ignore_index = True)
+
+        merged_approved.columns = merged_approved.columns.str.replace(' ', '')
+        merged_inactive.columns = merged_inactive.columns.str.replace(' ', '')
+        merged_dormant.columns = merged_dormant.columns.str.replace(' ', '')
+        merged_active.columns = merged_active.columns.str.replace(' ', '')
+        # Combine all datasets into one giant file
+        DIN_MASTER = pd.concat([merged_approved, merged_inactive, merged_dormant, merged_active], ignore_index=True)
         return merged_active, merged_inactive, merged_dormant, merged_approved, DIN_MASTER
 
-# Function to convert DataFrame to CSV and compress it to a zip file
-data = {'Column1': [1, 2, 3], 'Column2': ['A', 'B', 'C']}
-df = pd.DataFrame(data)
 
 def get_csv_files(merged_active, merged_inactive, merged_dormant, merged_approved, DIN_MASTER):
     with st.spinner('Processing Files Downloading'):
