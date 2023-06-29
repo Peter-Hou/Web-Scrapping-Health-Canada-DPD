@@ -1,4 +1,4 @@
-# DPD-Project
+# Web Scrapping Health Canada Drug Product Database Project
 
 # Health Canada Drug Product Database (HC-DPD) Web Scraping
 
