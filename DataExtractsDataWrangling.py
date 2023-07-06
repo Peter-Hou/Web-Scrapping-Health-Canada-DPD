@@ -185,6 +185,7 @@ def get_processed_dataframes():
                           .merge(ther_ap, on='DRUG_CODE', how='left') \
                           .merge(vet_ap, on='DRUG_CODE', how='left')
     with st.spinner('Data Cleaning'):
+
         # Extracts all ingredient codes that are biosimilar type from all files
         active_biosimilar_ingred_codes = merged_active['ACTIVE_INGREDIENT_CODE'][
             merged_active['TYPE'] == 'Biosimilar'].unique()
@@ -204,18 +205,22 @@ def get_processed_dataframes():
         active_mask = (merged_active['CLASS'] == 'Human') & (
             merged_active['ACTIVE_INGREDIENT_CODE'].isin(biosimilar_ingred_codes)) & (merged_active['TYPE'].isna())
         merged_active.loc[active_mask, "TYPE"] = 'Biologic'
+        merged_active.loc[active_mask, "TYPE_F"] = 'Biologique'
 
         inactive_mask = (merged_inactive['CLASS'] == 'Human') & (
             merged_inactive['ACTIVE_INGREDIENT_CODE'].isin(biosimilar_ingred_codes)) & (merged_inactive['TYPE'].isna())
         merged_inactive.loc[inactive_mask, 'TYPE'] = 'Biologic'
+        merged_inactive.loc[inactive_mask, "TYPE_F"] = 'Biologique'
 
         dormant_mask = (merged_dormant['CLASS'] == 'Human') & (
             merged_dormant['ACTIVE_INGREDIENT_CODE'].isin(biosimilar_ingred_codes)) & (merged_dormant['TYPE'].isna())
         merged_dormant.loc[dormant_mask, 'TYPE'] = 'Biologic'
+        merged_dormant.loc[dormant_mask, "TYPE_F"] = 'Biologique'
 
         approved_mask = (merged_approved['CLASS'] == 'Human') & (
             merged_approved['ACTIVE_INGREDIENT_CODE'].isin(biosimilar_ingred_codes)) & (merged_approved['TYPE'].isna())
         merged_approved.loc[approved_mask, 'TYPE'] = 'Biologic'
+        merged_approved.loc[approved_mask, "TYPE_F"] = 'Biologique'
 
         # Clean the dataset that has a column with a footnote in its name
         merged_approved.columns = merged_approved.columns.str.replace('Footnote', '')
@@ -229,6 +234,7 @@ def get_processed_dataframes():
         merged_active.columns = merged_active.columns.str.replace(' ', '')
         # Combine all datasets into one giant file
         DIN_MASTER = pd.concat([merged_approved, merged_inactive, merged_dormant, merged_active], ignore_index=True)
+
         return merged_active, merged_inactive, merged_dormant, merged_approved, DIN_MASTER
 
 
