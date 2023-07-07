@@ -25,8 +25,8 @@ def get_processed_dataframes():
     with zipfile.ZipFile(zip_files['allfiles_dr.zip'], 'r') as allfiles_dr_zip:
         af_dr_names = allfiles_dr_zip.namelist()
 
-    all_file_names = af_names.copy()
-
+    all_file_names = []
+    all_file_names.extend(af_names)
     all_file_names.extend(af_ia_names)
     all_file_names.extend(af_ap_names)
     all_file_names.extend(af_dr_names)
@@ -133,7 +133,7 @@ def get_processed_dataframes():
                         formal_file_name = name_mapping[file_name]
                         column_names = column_names_dict[formal_file_name]
 
-                        df = pd.read_csv(file, sep=',', header=None, names=column_names)
+                        df = pd.read_csv(file, sep=',', header=None, names=column_names, encoding='utf-8-sig')
                         globals()[file_name.split('.')[0]] = df
 
     with st.spinner('Combine Diverse Data Sources'):
@@ -232,6 +232,18 @@ def get_processed_dataframes():
         merged_inactive.columns = merged_inactive.columns.str.replace(' ', '')
         merged_dormant.columns = merged_dormant.columns.str.replace(' ', '')
         merged_active.columns = merged_active.columns.str.replace(' ', '')
+
+        # Clean the dataset that removes all the \r and ,
+        merged_approved = merged_approved.replace("\r", "", regex=True)
+        merged_approved = merged_approved.replace(",", "", regex=True)
+        merged_inactive = merged_inactive.replace("\r", "", regex=True)
+        merged_inactive = merged_inactive.replace(",", "", regex=True)
+        merged_dormant = merged_dormant.replace("\r", "", regex=True)
+        merged_dormant = merged_dormant.replace(",", "", regex=True)
+        merged_active = merged_active.replace("\r", "", regex=True)
+        merged_active = merged_active.replace(",", "", regex=True)
+
+
         # Combine all datasets into one giant file
         DIN_MASTER = pd.concat([merged_approved, merged_inactive, merged_dormant, merged_active], ignore_index=True)
 
